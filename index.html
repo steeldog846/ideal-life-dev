@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ideal Life on Pi Network</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    #user-section, #payment-section {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 10px 0;
+      background-color: #5f27cd;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Welcome to Ideal Life on Pi Network</h2>
+  <p>Live the life you've always dreamed of—powered by Pi.</p>
+
+  <div id="auth-section">
+    <button onclick="loginWithPi()">Login with Pi</button>
+  </div>
+
+  <div id="user-section" style="display:none;">
+    <p><strong>User:</strong> <span id="username"></span></p>
+  </div>
+
+  <div id="payment-section" style="display:none;">
+    <button onclick="makePayment()">Buy Starter Pack (1 Pi)</button>
+  </div>
+
+  <script>
+    async function loginWithPi() {
+      try {
+        const scopes = ['username', 'payments'];
+        const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+        document.getElementById("username").textContent = authResult.user.username;
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("user-section").style.display = "block";
+        document.getElementById("payment-section").style.display = "block";
+        console.log("Authenticated", authResult);
+      } catch (err) {
+        console.error("Authentication failed:", err);
+      }
+    }
+
+    function onIncompletePaymentFound(payment) {
+      console.log("Incomplete payment found:", payment);
+      // Here, you could complete or cancel the payment.
+    }
+
+    async function makePayment() {
+      try {
+        const payment = await Pi.createPayment({
+          amount: 1,
+          memo: "Starter Pack Purchase",
+          metadata: { type: "starter_pack" }
+        }, {
+          onReadyForServerApproval: function(paymentId) {
+            console.log("Send paymentId to server for approval:", paymentId);
+          },
+          onReadyForServerCompletion: function(paymentId, txid) {
+            console.log("Transaction ID:", txid);
+            alert("Payment completed! Welcome to Ideal Life.");
+          },
+          onCancel: function(paymentId) {
+            console.log("Payment cancelled:", paymentId);
+          },
+          onError: function(error, payment) {
+            console.error("Payment error:", error);
+          }
+        });
+      } catch (err) {
+        console.error("Payment failed:", err);
+      }
+    }
+  </script>
+
+</body>
+</html>
