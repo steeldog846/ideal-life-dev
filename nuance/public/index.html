@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nuance Hub</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◐</span>
+      <div>
+        <h1>Nuance Hub</h1>
+        <p class="tag">Teach every AI what people really mean.</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="label" role="tab">Answer questions</button>
+      <button class="tab" data-view="share" role="tab">Share a moment</button>
+      <button class="tab" data-view="agents" role="tab">Connect an AI</button>
+      <button class="tab" data-view="community" role="tab">Community</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ LABEL ============ -->
+    <section id="view-label" class="view">
+      <div id="signin" class="card narrow" hidden>
+        <h2>Join as a human guide</h2>
+        <p class="muted">Claude, ChatGPT, Gemini, Copilot, Pi apps and other assistants send us moments they couldn't read: sarcasm, a joke, hidden frustration. You tell them what was really going on, and every connected AI learns from it.</p>
+        <button class="primary pi-btn" id="pi-signin" type="button" hidden>Sign in with Pi</button>
+        <div id="google-signin" class="google-signin" hidden></div>
+        <p class="small muted" id="pi-or" hidden>or try it as a guest</p>
+        <form id="signin-form" class="row">
+          <input id="displayName" placeholder="Pick a display name" maxlength="40" required autocomplete="nickname">
+          <input class="trap" name="website" id="signin-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="primary" type="submit">Start as guest</button>
+        </form>
+        <p class="small muted" id="guest-note">Guests can answer 30 questions a day, and their answers count half. Signing in with Google or Pi lifts that.</p>
+        <p class="error" id="signin-error" hidden></p>
+      </div>
+
+      <div id="me-bar" class="me-bar" hidden>
+        <span>Signed in as <strong id="me-name"></strong></span>
+        <span class="pill" title="Rises when you agree with the final answer">Trust <strong id="me-rep"></strong></span>
+        <span class="pill">Answered <strong id="me-count"></strong></span>
+        <span class="pill guest-pill" id="me-guest" hidden title="Sign in with Google or Pi for full weight and higher limits">Guest</span>
+        <button class="link" id="signout">Sign out</button>
+      </div>
+
+      <div id="empty" class="card narrow center" hidden>
+        <h2>All caught up</h2>
+        <p class="muted">No questions are waiting right now. Check back soon, or try the chat on the “Connect an AI” tab.</p>
+        <button class="ghost" id="refresh">Check again</button>
+      </div>
+
+      <form id="task" class="card task" hidden>
+        <div class="task-head">
+          <span class="badge" id="t-difficulty"></span>
+          <span class="muted small" id="t-meta"></span>
+        </div>
+        <p class="small origin" id="t-origin"></p>
+
+        <div class="convo" id="t-context"></div>
+        <blockquote class="utterance" id="t-utterance"></blockquote>
+        <p class="small typing-note" id="t-typing" hidden></p>
+
+        <div class="ask">
+          <span class="ask-label">The AI asks</span>
+          <p id="t-question"></p>
+          <p class="muted small" id="t-guess"></p>
+        </div>
+
+        <div class="app-answer">
+          <div class="app-answer-head">
+            <span>Our first guess <span class="muted small" id="t-source"></span></span>
+            <span class="conf" id="t-conf"></span>
+          </div>
+          <p><strong id="t-app-intent"></strong> · <strong id="t-app-emotion"></strong></p>
+          <p class="muted small" id="t-app-why"></p>
+          <fieldset class="verdict">
+            <legend>Is this guess right?</legend>
+            <label><input type="radio" name="verdict" value="correct"> Right</label>
+            <label><input type="radio" name="verdict" value="partly"> Partly</label>
+            <label><input type="radio" name="verdict" value="wrong"> Wrong</label>
+          </fieldset>
+        </div>
+
+        <fieldset>
+          <legend>What did they really mean? <span class="muted small">(tap all that fit)</span></legend>
+          <div class="chips" id="intent-chips"></div>
+          <input class="own-words" id="own-meaning" maxlength="300" placeholder="✏️ Or say it your way (any language, any spelling)">
+        </fieldset>
+        <fieldset>
+          <legend>How did they feel? <span class="muted small">(tap all that fit)</span></legend>
+          <div class="chips" id="emotion-chips"></div>
+          <input class="own-words" id="own-feeling" maxlength="300" placeholder="✏️ Or their feeling in your words">
+        </fieldset>
+        <fieldset>
+          <legend>How strongly? <span class="muted" id="intensity-out">3</span>/5</legend>
+          <input type="range" id="intensity" min="1" max="5" value="3">
+        </fieldset>
+        <fieldset>
+          <legend>Explain it to the AI <span class="muted small">(optional, but this is what helps most)</span></legend>
+          <textarea id="explanation" rows="3" maxlength="600" placeholder="e.g. “Great” plus a crashed laptop means the opposite — they're fed up."></textarea>
+        </fieldset>
+
+        <p class="error" id="task-error" hidden></p>
+        <div class="row end">
+          <button type="button" class="ghost" id="skip">Skip</button>
+          <button type="submit" class="primary">Send answer</button>
+        </div>
+      </form>
+
+      <div id="result" class="card task" hidden>
+        <h2 id="r-title"></h2>
+        <p class="muted" id="r-sub"></p>
+        <div id="r-bars"></div>
+        <div class="row end"><button class="primary" id="next">Next question</button></div>
+      </div>
+    </section>
+
+    <!-- ============ SHARE ============ -->
+    <section id="view-share" class="view" hidden>
+      <form id="share" class="card">
+        <h2>Share a moment an AI got wrong</h2>
+        <p class="muted">Did an assistant take your sarcasm literally or miss that you were upset? Paste what you said, exactly as you typed it (CAPITALS and all), and tap what you meant. That's it.</p>
+        <p class="small" id="share-signin-note" hidden>Sign in on the “Answer questions” tab first.</p>
+
+        <label class="stack">What you said
+          <input id="s-utterance" required maxlength="2000" placeholder="Love this airline SO much.">
+        </label>
+        <p class="small typing-note" id="s-typing" aria-live="polite"></p>
+        <fieldset>
+          <legend>What you meant <span class="muted small">(tap all that fit)</span></legend>
+          <div class="chips" id="s-intent-chips"></div>
+          <input class="own-words" id="s-own-meaning" maxlength="300" placeholder="✏️ Or say it your way (any language, any spelling)">
+        </fieldset>
+        <fieldset>
+          <legend>How you felt <span class="muted small">(tap all that fit)</span></legend>
+          <div class="chips" id="s-emotion-chips"></div>
+          <input class="own-words" id="s-own-feeling" maxlength="300" placeholder="✏️ Or your feeling in your own words (emoji ok)">
+        </fieldset>
+        <fieldset>
+          <legend>Which AI was it?</legend>
+          <div class="chips" id="s-platform-chips"></div>
+        </fieldset>
+        <details class="more">
+          <summary>Add more detail (optional)</summary>
+          <label class="stack"><span>What came before (one line per turn, start with <code>ai:</code> or <code>human:</code>)</span>
+            <textarea id="s-context" rows="3" placeholder="human: My flight got cancelled for the third time.&#10;ai: I'm sorry to hear that! Would you like to book another flight?"></textarea>
+          </label>
+          <label class="stack">How the AI got it wrong
+            <input id="s-misread" maxlength="300" placeholder="It recommended more flights with the same airline.">
+          </label>
+          <label class="stack">Explain it for the AI
+            <textarea id="s-explanation" rows="2" maxlength="600" placeholder="Third cancellation. Saying I love them was pure sarcasm."></textarea>
+          </label>
+        </details>
+        <label class="check small"><input type="checkbox" id="s-consent"><span>This is my own conversation (or I have permission), and I've removed names.</span></label>
+        <p class="error" id="share-error" hidden></p>
+        <p class="ok" id="share-ok" hidden></p>
+        <div class="row end"><button class="primary" type="submit">Share</button></div>
+      </form>
+    </section>
+
+    <!-- ============ AGENTS ============ -->
+    <section id="view-agents" class="view" hidden>
+      <div class="card">
+        <h2>Connect any AI</h2>
+        <p>Nuance Hub isn't tied to one company. Any assistant or AI app can connect through open standards: <strong>MCP</strong> (Claude, ChatGPT, Copilot, Cursor and most agent tools), <strong>OpenAPI</strong> (ChatGPT custom GPTs, Gemini, Copilot Studio, LangChain) or plain <strong>REST</strong> (Pi Network apps and anything else).</p>
+        <p>When a person's reply leaves your AI unsure (sarcasm? a joke? quietly annoyed?), it asks Nuance Hub <em>after</em> they reply, never before. It gets back two or three one-tap choices in plain words, ranked by what earlier people in the same spot meant. The person taps one; nobody types.</p>
+        <ol class="flow">
+          <li><strong>Check</strong>: <code>quick_check_meaning</code> (MCP) or <code>POST /api/v1/checks</code>.</li>
+          <li><strong>Skip or ask</strong>: if enough people already agreed, <code>shouldAsk</code> is false and your AI just acts on the suggestion. Otherwise it shows the taps.</li>
+          <li><strong>Record the tap</strong>, then reply. <code>whatWorked</code> shows replies that helped others in the same spot.</li>
+          <li><strong>One more tap</strong>: “That helped” / “Still missed the point” / “Right idea, wrong tone”.</li>
+          <li><strong>Every AI improves</strong>: the next person gets better choices, or isn't asked at all. If silent guesses start missing, it asks again.</li>
+        </ol>
+        <p class="small muted">Hard cases (“Something else”) go to the community, who settle them on the “Answer questions” tab.</p>
+      </div>
+
+      <div class="card">
+        <h3>1. Register your AI</h3>
+        <div class="row">
+          <input id="agent-name" placeholder="Name, e.g. support-bot" maxlength="100">
+          <select id="agent-platform" aria-label="Platform"></select>
+          <input class="trap" id="agent-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="ghost" id="register-agent">Register</button>
+        </div>
+        <p class="small muted" id="agent-key-out"></p>
+      </div>
+
+      <div class="card">
+        <h3>2. Connect it</h3>
+        <div class="chips" id="guide-tabs" role="tablist"></div>
+        <div id="guide" class="guide"></div>
+      </div>
+
+      <div class="card">
+        <h3>3. See it in a chat</h3>
+        <p class="small muted">Play the person. Send the same kind of message a few times and tap the same meaning: watch the choices re-order, then the AI stop asking.</p>
+        <div class="chat" id="chat">
+          <div class="bubble ai">Your package is delayed by two more days.</div>
+        </div>
+        <form id="chat-form" class="row">
+          <input id="chat-input" value="Fantastic, late again." maxlength="500" aria-label="Your message">
+          <button class="primary" type="submit">Send</button>
+        </form>
+        <p class="small muted" id="chat-note"></p>
+      </div>
+
+      <div class="card">
+        <h3>API in one look</h3>
+        <pre class="code">POST /api/agents/register              {"name", "platform", "webhookUrl"}  → {apiKey}
+
+POST /api/v1/checks                    {"utterance", "context", "consent": true}
+  → {id, shouldAsk, prompt, options[{id, label}], suggested, whatWorked, tapUrl}
+POST /api/v1/checks/:id/answer         {"optionId": "o1" | "other", "otherText"}
+POST /api/v1/checks/:id/reaction       {"reaction": "helpful|missed|tone", "aiResponse"}
+
+POST /api/v1/queries                   send a hard case to the community
+GET  /api/v1/learnings?since=ISO       everything learned, from every AI
+GET  /api/v1/dataset.jsonl             the same, as a training file</pre>
+        <p class="small muted">If your AI can't show buttons, send the person <code>tapUrl</code>: a one-screen page with the choices. Full docs: <code>nuance/README.md</code>.</p>
+      </div>
+    </section>
+
+    <!-- ============ COMMUNITY ============ -->
+    <section id="view-community" class="view" hidden>
+      <div class="stats" id="stats"></div>
+      <p class="small muted" id="claude-status"></p>
+      <div class="card">
+        <h3>Is the AI asking less as it learns?</h3>
+        <div id="ask-rate"></div>
+      </div>
+      <div class="card">
+        <h3>Questions by AI platform</h3>
+        <div id="by-platform"></div>
+      </div>
+      <div class="card">
+        <h3>Most trusted guides</h3>
+        <ol class="leaderboard" id="leaderboard"></ol>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot small muted">Messages are scrubbed of emails, phone numbers and links before anyone sees them. · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></footer>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
